@@ -22,21 +22,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#include "VisualizerPluginEditor.h"
+#include "RateViewerEditor.h"
 
-#include "VisualizerPluginCanvas.h"
-#include "VisualizerPlugin.h"
+#include "RateViewerCanvas.h"
+#include "RateViewer.h"
 
 
-VisualizerPluginEditor::VisualizerPluginEditor(GenericProcessor* p)
-    : VisualizerEditor(p, "Visualizer", 200)
+RateViewerEditor::RateViewerEditor(GenericProcessor* p)
+    : VisualizerEditor(p, "Spike Rate", 200)
 {
 
     //addSelectedChannelsParameterEditor("Channels", 20, 105);
 
 }
 
-Visualizer* VisualizerPluginEditor::createNewCanvas()
+Visualizer* RateViewerEditor::createNewCanvas()
 {
-    return new VisualizerPluginCanvas((VisualizerPlugin*) getProcessor());;
+    return new RateViewerCanvas((RateViewer*) getProcessor());;
 }

@@ -21,27 +21,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef VISUALIZERCANVAS_H_INCLUDED
-#define VISUALIZERCANVAS_H_INCLUDED
+#ifndef RATEVIEWERCANVAS_H_DEFINED
+#define RATEVIEWERCANVAS_H_DEFINED
 
 #include <VisualizerWindowHeaders.h>
 
-class VisualizerPlugin;
+class RateViewer;
 
 /**
 * 
 	Draws data in real time
 
 */
-class VisualizerPluginCanvas : public Visualizer
+class RateViewerCanvas : public Visualizer
 {
 public:
 
 	/** Constructor */
-	VisualizerPluginCanvas(VisualizerPlugin* processor);
+	RateViewerCanvas(RateViewer* processor);
 
 	/** Destructor */
-	~VisualizerPluginCanvas();
+	~RateViewerCanvas();
 
 	/** Updates boundaries of sub-components whenever the canvas size changes */
 	void resized() override;
@@ -61,14 +61,14 @@ public:
 private:
 
 	/** Pointer to the processor class */
-	VisualizerPlugin* processor;
+	RateViewer* processor;
 
 	/** Class for plotting data */
 	InteractivePlot plt;
 
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPluginCanvas);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);
 };
 
 
-#endif // SPECTRUMCANVAS_H_INCLUDED
+#endif // RATEVIEWERCANVAS_H_DEFINED

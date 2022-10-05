@@ -22,10 +22,42 @@
 */
 
 //This prevents include loops. We recommend changing the macro to a name suitable for your plugin
-#ifndef VISUALIZERPLUGIN_H_DEFINED
-#define VISUALIZERPLUGIN_H_DEFINED
+#ifndef RATEVIEWER_H_DEFINED
+#define RATEVIEWER_H_DEFINED
 
 #include <ProcessorHeaders.h>
+
+/** Stores electrode information */
+
+class Electrode
+{
+public:
+
+    /** Constructor */
+    Electrode(SpikeChannel* channel);
+
+    /** Destructor */
+    ~Electrode() { }
+
+    /** Returns true if stream name and local index are the same */
+    bool matchesChannel(SpikeChannel* channel);
+
+    /** Updates settings with new SpikeChannel object */
+    void updateSettings(SpikeChannel* channel);
+
+    /** Sets 'isActive' to false */
+    void reset() { isActive = false; }
+
+    String name;
+    String streamName;
+    Uuid uniqueId;
+
+    int numChannels;
+    int numSamples;
+    uint16 streamId;
+
+    bool isActive;
+};
 
 
 /** 
@@ -33,14 +65,14 @@
 	or an extended settings interface.
 */
 
-class VisualizerPlugin : public GenericProcessor
+class RateViewer : public GenericProcessor
 {
 public:
 	/** The class constructor, used to initialize any members.*/
-	VisualizerPlugin();
+	RateViewer();
 
 	/** The class destructor, used to deallocate memory*/
-	~VisualizerPlugin();
+	~RateViewer();
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
 	AudioProcessorEditor* createEditor() override;
@@ -80,9 +112,12 @@ public:
 
 private:
 
+	OwnedArray<Electrode> electrodes;
+	std::map<SpikeChannel*, Electrode*> electrodeMap;
+
 	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VisualizerPlugin);
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewer);
 
 };
 
-#endif // VISUALIZERPLUGIN_H_DEFINED
+#endif // RATEVIEWER_H_DEFINED

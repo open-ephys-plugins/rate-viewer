@@ -21,48 +21,48 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "VisualizerPluginCanvas.h"
+#include "RateViewerCanvas.h"
 
-#include "VisualizerPlugin.h"
+#include "RateViewer.h"
 
 
-VisualizerPluginCanvas::VisualizerPluginCanvas(VisualizerPlugin* processor_)
+RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
 	: processor(processor_)
 {
 
 }
 
 
-VisualizerPluginCanvas::~VisualizerPluginCanvas()
+RateViewerCanvas::~RateViewerCanvas()
 {
 
 }
 
 
-void VisualizerPluginCanvas::resized()
+void RateViewerCanvas::resized()
 {
 
 }
 
-void VisualizerPluginCanvas::refreshState()
-{
-
-}
-
-
-void VisualizerPluginCanvas::update()
+void RateViewerCanvas::refreshState()
 {
 
 }
 
 
-void VisualizerPluginCanvas::refresh()
+void RateViewerCanvas::update()
 {
 
 }
 
 
-void VisualizerPluginCanvas::paint(Graphics& g)
+void RateViewerCanvas::refresh()
+{
+
+}
+
+
+void RateViewerCanvas::paint(Graphics& g)
 {
 
 	g.fillAll(Colours::black);
