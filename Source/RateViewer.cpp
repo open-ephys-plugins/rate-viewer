@@ -24,44 +24,23 @@
 #include "RateViewer.h"
 
 #include "RateViewerEditor.h"
-
-Electrode::Electrode(SpikeChannel* channel)
-    : isActive(true)
-{
-
-    name = channel->getName();
-    streamName = channel->getStreamName();
-
-    streamId = channel->getStreamId();
-    uniqueId = channel->getUniqueId();
-
-    numChannels = channel->getNumChannels();
-    numSamples = channel->getPrePeakSamples() + channel->getPostPeakSamples();
-}
-
-bool Electrode::matchesChannel(SpikeChannel* channel)
-{
-    if (channel->getUniqueId() == uniqueId)
-    {
-        isActive = true;
-        return true;
-    }
-    else {
-        return false;
-    }
-
-}
-
-void Electrode::updateSettings(SpikeChannel* channel)
-{
-    name = channel->getName();
-}
-
+#include "RateViewerCanvas.h"
 
 RateViewer::RateViewer() 
-    : GenericProcessor("Rate Viewer")
+    : GenericProcessor("Rate Viewer"),
+      windowSize(500),
+      binSize(25),
+      canvas(nullptr)
 {
-
+    addIntParameter(Parameter::GLOBAL_SCOPE,
+                    "window_size",
+                    "Size of the window in ms",
+                    500, 10, 1000);
+    
+    addIntParameter(Parameter::GLOBAL_SCOPE,
+                    "bin_size",
+                    "Size of the bins in ms",
+                    25, 1, 100);
 }
 
 
@@ -80,42 +59,50 @@ AudioProcessorEditor* RateViewer::createEditor()
 
 void RateViewer::updateSettings()
 {
-    for(auto electrode : electrodes)
-        electrode->reset();
+    electrodes.clear();
+    electrodeMap.clear();
 
     for(auto spikeChan : spikeChannels)
     {
         if(spikeChan->isValid())
         {
-            bool foundMatch = false;
-
-            for(auto electrode : electrodes)
-            {
-                if(electrode->matchesChannel(spikeChan))
-                {
-                    electrode->updateSettings(spikeChan);
-                    electrodeMap[spikeChan] = electrode;
-                    foundMatch = true;
-                    break;
-                }
-            }
-
-            if(!foundMatch)
-            {
-                Electrode* electrode = new Electrode(spikeChan);
-                electrodes.add(electrode);
-                electrodeMap[spikeChan] = electrode;
-            }
+            Electrode* electrode = new Electrode();
+            electrode->name = spikeChan->getName();
+            electrode->numChannels = spikeChan->getNumChannels();
+            electrode->streamId = spikeChan->getStreamId();
+            electrodes.add(electrode);
+            electrodeMap[spikeChan] = electrode;
         }
     }
 }
 
 
 void RateViewer::process(AudioBuffer<float>& buffer)
-{
+{	
+    int64 mostRecentSample = getFirstSampleNumberForBlock(getEditor()->getCurrentStream()) + getNumSamplesInBlock(getEditor()->getCurrentStream());
+
+    canvas->setMostRecentSample(mostRecentSample);
 
     checkForEvents(true);
-	 
+}
+
+
+void RateViewer::parameterValueChanged(Parameter* param)
+{
+   if (param->getName().equalsIgnoreCase("window_size"))
+    {
+        windowSize = (int)param->getValue();
+
+        if(canvas != nullptr)
+            canvas->setWindowSizeMs(windowSize);
+    }
+    else if (param->getName().equalsIgnoreCase("bin_size"))
+    {
+        binSize = (int)param->getValue();
+
+        if(canvas != nullptr)
+            canvas->setWindowSizeMs(windowSize);
+    }
 }
 
 
@@ -125,9 +112,13 @@ void RateViewer::handleTTLEvent(TTLEventPtr event)
 }
 
 
-void RateViewer::handleSpike(SpikePtr event)
+void RateViewer::handleSpike(SpikePtr spike)
 {
-
+    if(spike->getStreamId() == getEditor()->getCurrentStream()
+       && electrodeMap.at(spike->getChannelInfo())->isActive)
+    {
+        
+    } 
 }
 
 
@@ -146,4 +137,34 @@ void RateViewer::saveCustomParametersToXml(XmlElement* parentElement)
 void RateViewer::loadCustomParametersFromXml(XmlElement* parentElement)
 {
 
+}
+
+Array<String> RateViewer::getElectrodesForStream(uint16 streamId)
+{
+    Array<String> electrodesForStream;
+
+    for (auto electrode : electrodes)
+    {
+        if (electrode->streamId == streamId)
+            electrodesForStream.add(electrode->name);
+    }
+
+    return electrodesForStream;
+}
+
+void RateViewer::setActiveElectrode(String name)
+{
+    for (auto electrode : electrodes)
+    {
+        if (electrode->name.equalsIgnoreCase(name))
+        {
+            electrode->isActive = true;
+            LOGC(electrode->name, " Active!");
+        }
+        else
+        {
+            electrode->isActive = false;
+            LOGC(electrode->name, " Inactive!");
+        }
+    }
 }

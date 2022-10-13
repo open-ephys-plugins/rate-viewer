@@ -27,9 +27,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
-	: processor(processor_)
+	: processor(processor_),
+	  windowSize(0),
+	  binSize(0),
+	  mostRecentSample(0)
 {
+	viewport = std::make_unique<Viewport>("Viewport");
+	viewport->setScrollBarsShown(true, true);
 
+	plt.title("Spike Rate");
+	plt.show();
+
+	viewport->setViewedComponent(&plt, false);
+	addAndMakeVisible(viewport.get());
 }
 
 
@@ -51,8 +61,17 @@ void RateViewerCanvas::refreshState()
 
 
 void RateViewerCanvas::update()
-{
-
+{        
+	for (auto sample_number : incomingSpikeSampleNums)
+	{
+		if(sample_number > (mostRecentSample - windowSize))
+		{
+			
+		}
+		
+	}
+	
+	incomingSpikeSampleNums.clear();
 }
 
 
@@ -67,4 +86,39 @@ void RateViewerCanvas::paint(Graphics& g)
 
 	g.fillAll(Colours::black);
 
+}
+
+
+void RateViewerCanvas::setWindowSizeMs(int windowSize_)
+{
+	windowSize = windowSize_;
+
+	setBinSizeMs(binSize);
+}
+
+void RateViewerCanvas::setBinSizeMs(int binSize_)
+{
+	binSize = binSize_;
+
+	binEdges.clear();
+
+	double binEdge = (double) -windowSize;
+
+	while(binEdge < 0)
+	{
+		binEdges.add(binEdge);
+		binEdge += (double)binSize;
+	}
+
+	binEdges.add(0);
+}
+
+void RateViewerCanvas::setMostRecentSample(int64 sampleNum)
+{
+	mostRecentSample = sampleNum;
+}
+
+void RateViewerCanvas::addSpike(int64 sample_num)
+{
+	incomingSpikeSampleNums.add(sample_num);
 }

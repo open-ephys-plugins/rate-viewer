@@ -29,14 +29,70 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 RateViewerEditor::RateViewerEditor(GenericProcessor* p)
-    : VisualizerEditor(p, "Spike Rate", 200)
+    : VisualizerEditor(p, "Spike Rate", 210),
+      rateViewerCanvas(nullptr)
 {
 
-    //addSelectedChannelsParameterEditor("Channels", 20, 105);
+    electrodeList = std::make_unique<ComboBox>("Electrode List");
+    electrodeList->addListener(this);
+    electrodeList->setBounds(50,40,120,20);
+    addAndMakeVisible(electrodeList.get());
+
+    addTextBoxParameterEditor("window_size", 15, 75);
+
+    addTextBoxParameterEditor("bin_size", 120, 75);
+
+    rateViewerNode = (RateViewer*)p;
 
 }
 
 Visualizer* RateViewerEditor::createNewCanvas()
 {
-    return new RateViewerCanvas((RateViewer*) getProcessor());;
+    rateViewerCanvas = new RateViewerCanvas(rateViewerNode);
+
+    rateViewerNode->canvas = rateViewerCanvas;
+
+    selectedStreamHasChanged();
+
+    return rateViewerCanvas;
+}
+
+void RateViewerEditor::comboBoxChanged(ComboBox* comboBox)
+{
+    if (comboBox == electrodeList.get())
+    {
+        if(currentElectrodes.size() == 0)
+        {
+            rateViewerNode->setActiveElectrode("None");
+        }
+        else
+        {
+            rateViewerNode->setActiveElectrode(
+                currentElectrodes[electrodeList->getSelectedId() - 1]);
+        }
+    }
+}
+
+void RateViewerEditor::selectedStreamHasChanged()
+{
+    electrodeList->clear();
+
+    if (selectedStream == 0)
+    {
+        return;
+    }
+
+
+    currentElectrodes = rateViewerNode->getElectrodesForStream(selectedStream);
+
+    int id = 0;
+
+    for (auto electrode : currentElectrodes)
+    {
+
+        electrodeList->addItem(electrode, ++id);
+            
+    }
+
+    electrodeList->setSelectedId(1, sendNotification);
 }

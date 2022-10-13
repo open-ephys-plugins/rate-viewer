@@ -27,38 +27,7 @@
 
 #include <ProcessorHeaders.h>
 
-/** Stores electrode information */
-
-class Electrode
-{
-public:
-
-    /** Constructor */
-    Electrode(SpikeChannel* channel);
-
-    /** Destructor */
-    ~Electrode() { }
-
-    /** Returns true if stream name and local index are the same */
-    bool matchesChannel(SpikeChannel* channel);
-
-    /** Updates settings with new SpikeChannel object */
-    void updateSettings(SpikeChannel* channel);
-
-    /** Sets 'isActive' to false */
-    void reset() { isActive = false; }
-
-    String name;
-    String streamName;
-    Uuid uniqueId;
-
-    int numChannels;
-    int numSamples;
-    uint16 streamId;
-
-    bool isActive;
-};
-
+class RateViewerCanvas;
 
 /** 
 	A plugin that includes a canvas for displaying incoming data
@@ -88,6 +57,9 @@ public:
 		Visualizer plugins typically use this method to send data to the canvas for display purposes */
 	void process(AudioBuffer<float>& buffer) override;
 
+	/** Used to alter parameters of data acquisition. */
+    void parameterValueChanged(Parameter* param) override;
+
 	/** Handles events received by the processor
 		Called automatically for each received event whenever checkForEvents() is called from
 		the plugin's process() method */
@@ -110,10 +82,31 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement* parentElement) override;
 
+	/** Returns an array of available electrodes*/
+    Array<String> getElectrodesForStream(uint16 streamId);
+
+	void setActiveElectrode(String name);
+
+	RateViewerCanvas* canvas;
+
 private:
 
+	struct Electrode
+    {
+        String name;
+
+        int numChannels;
+
+		uint16 streamId;
+
+		bool isActive = false;
+    };
+
+
 	OwnedArray<Electrode> electrodes;
-	std::map<SpikeChannel*, Electrode*> electrodeMap;
+	std::map<const SpikeChannel*, Electrode*> electrodeMap;
+
+	int windowSize, binSize;
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewer);

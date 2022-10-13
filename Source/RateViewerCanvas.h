@@ -58,13 +58,31 @@ public:
 	/** Draws the canvas background */
 	void paint(Graphics& g) override;
 
+	void setWindowSizeMs(int windowSize_);
+
+	void setBinSizeMs(int binSize_);
+
+	void setMostRecentSample(int64 sampleNum);
+
+	/** Adds a spike time */
+    void addSpike(int64 sample_number);
+
 private:
 
 	/** Pointer to the processor class */
 	RateViewer* processor;
 
+	std::unique_ptr<Viewport> viewport;
+
 	/** Class for plotting data */
 	InteractivePlot plt;
+
+	int windowSize, binSize;
+	int64 mostRecentSample;
+
+	Array<double> binEdges;
+
+	Array<int64> incomingSpikeSampleNums;
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);
