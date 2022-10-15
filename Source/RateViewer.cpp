@@ -70,20 +70,43 @@ void RateViewer::updateSettings()
             electrode->name = spikeChan->getName();
             electrode->numChannels = spikeChan->getNumChannels();
             electrode->streamId = spikeChan->getStreamId();
+            electrode->sampleRate = spikeChan->getSampleRate();
             electrodes.add(electrode);
             electrodeMap[spikeChan] = electrode;
         }
     }
+
+    parameterValueChanged(getParameter("window_size"));
+}
+
+bool RateViewer::startAcquisition()
+{
+	((RateViewerEditor*)getEditor())->enable();
+    return true;
+}
+
+bool RateViewer::stopAcquisition()
+{
+    ((RateViewerEditor*)getEditor())->disable();
+    return true;
 }
 
 
 void RateViewer::process(AudioBuffer<float>& buffer)
 {	
-    int64 mostRecentSample = getFirstSampleNumberForBlock(getEditor()->getCurrentStream()) + getNumSamplesInBlock(getEditor()->getCurrentStream());
-
-    canvas->setMostRecentSample(mostRecentSample);
-
     checkForEvents(true);
+
+    for(auto stream : getDataStreams())
+    {
+        if(stream->getStreamId() == getEditor()->getCurrentStream())
+        {
+            int64 mostRecentSample = getFirstSampleNumberForBlock(stream->getStreamId()) + getNumSamplesInBlock(stream->getStreamId());
+
+            if(canvas != nullptr)
+                canvas->setMostRecentSample(mostRecentSample);
+        }
+    }
+
 }
 
 
@@ -101,7 +124,7 @@ void RateViewer::parameterValueChanged(Parameter* param)
         binSize = (int)param->getValue();
 
         if(canvas != nullptr)
-            canvas->setWindowSizeMs(windowSize);
+            canvas->setBinSizeMs(binSize);
     }
 }
 
@@ -117,7 +140,7 @@ void RateViewer::handleSpike(SpikePtr spike)
     if(spike->getStreamId() == getEditor()->getCurrentStream()
        && electrodeMap.at(spike->getChannelInfo())->isActive)
     {
-        
+        canvas->addSpike(spike->getSampleNumber());
     } 
 }
 
@@ -159,12 +182,24 @@ void RateViewer::setActiveElectrode(String name)
         if (electrode->name.equalsIgnoreCase(name))
         {
             electrode->isActive = true;
-            LOGC(electrode->name, " Active!");
+
+            if(canvas != nullptr)
+                canvas->setSampleRate(electrode->sampleRate);
+
         }
         else
         {
             electrode->isActive = false;
-            LOGC(electrode->name, " Inactive!");
         }
     }
+}
+
+int RateViewer::getWindowSizeMs()
+{
+    return windowSize;
+}
+
+int RateViewer::getBinSizeMs()
+{
+    return binSize;
 }

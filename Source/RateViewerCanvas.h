@@ -55,6 +55,12 @@ public:
 	/** Called instead of "repaint()" to avoid re-painting sub-components*/
 	void refresh() override;
 
+	// /** Called when data acquisition is active.*/
+    // void beginAnimation() override;
+
+    // /** Called when data acquisition ends.*/
+    // void endAnimation() override;
+
 	/** Draws the canvas background */
 	void paint(Graphics& g) override;
 
@@ -64,10 +70,20 @@ public:
 
 	void setMostRecentSample(int64 sampleNum);
 
+	void setSampleRate(float sampleRate);
+
 	/** Adds a spike time */
     void addSpike(int64 sample_number);
 
 private:
+
+	/** Recounts spikes/bin */
+    void recount();
+
+	/** Recomputes bin edges */
+    void recompute();
+
+	void updatePlotRange();
 
 	/** Pointer to the processor class */
 	RateViewer* processor;
@@ -77,12 +93,23 @@ private:
 	/** Class for plotting data */
 	InteractivePlot plt;
 
+	float sampleRate;
+
 	int windowSize, binSize;
 	int64 mostRecentSample;
 
 	Array<double> binEdges;
+	Array<int> binEdgesInSamples;
+
+	Array<double> relativeTimes;
 
 	Array<int64> incomingSpikeSampleNums;
+
+	int lastValidIndex;
+
+	Array<int> counts;
+	int maxCount;
+	
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);

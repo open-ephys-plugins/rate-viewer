@@ -82,10 +82,20 @@ public:
 		Parameter objects*/
 	void loadCustomParametersFromXml(XmlElement* parentElement) override;
 
+	/** Enables the editor */
+    bool startAcquisition() override;
+
+    /** Disables the editor*/
+    bool stopAcquisition() override;
+
 	/** Returns an array of available electrodes*/
     Array<String> getElectrodesForStream(uint16 streamId);
 
 	void setActiveElectrode(String name);
+
+	int getWindowSizeMs();
+
+	int getBinSizeMs();
 
 	RateViewerCanvas* canvas;
 
@@ -98,6 +108,8 @@ private:
         int numChannels;
 
 		uint16 streamId;
+
+		float sampleRate;
 
 		bool isActive = false;
     };
