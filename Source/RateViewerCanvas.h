@@ -75,6 +75,8 @@ public:
 	/** Adds a spike time */
     void addSpike(int64 sample_number);
 
+	void setPlotTitle(const String& title);
+
 private:
 
 	/** Recounts spikes/bin */

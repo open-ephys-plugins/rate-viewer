@@ -39,9 +39,8 @@ RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
 	viewport->setScrollBarsShown(true, true);
 
 	plt.clear();
-	plt.title("Spike Rate");
-	plt.xlabel("Window (ms)");
-	plt.ylabel("Num \n Of \n Spikes");
+	plt.xlabel("Offset(ms)");
+	plt.ylabel("Rate (Hz)");
 	plt.setInteractive(InteractivePlotMode::OFF);
 	plt.setBackgroundColour(Colours::darkslategrey);
 	plt.show();
@@ -63,7 +62,7 @@ RateViewerCanvas::~RateViewerCanvas()
 void RateViewerCanvas::resized()
 {
 	viewport->setBounds(0, 50, getWidth(), getHeight()-50);
-	plt.setBounds(0, 50, getWidth() - viewport->getScrollBarThickness(), 500);
+	plt.setBounds(0, 0, getWidth() - viewport->getScrollBarThickness(), getHeight() - 100);
 }
 
 void RateViewerCanvas::refreshState()
@@ -86,13 +85,13 @@ void RateViewerCanvas::refresh()
 
 	for(int i = 0; i < binEdges.size() - 1; i++)
 	{
-		float bin = (binEdges[i] + binEdges[i+1]) / 2;
+		float bin = (binEdges[i] + binEdges[i + 1]) / 2;
 		x.push_back(bin);
-		y.push_back(counts[i]);
+		y.push_back(counts[i] * 1000 / binSize);
 	}
 
 	plt.clear();
-	plt.plot(x, y, Colours::lightyellow, binSize, 1.0f, PlotType::BAR);
+	plt.plot(x, y, Colours::lightyellow, 1.0, 1.0f, PlotType::FILLED);
 }
 
 
@@ -120,24 +119,26 @@ void RateViewerCanvas::recount()
 		{
 			lastValidIndex = i + 1;
 		}
+		else
+		{
+			for (int j = 0; j < nBins; j++)
+			{
+				
+				if (relativeSampleNum > binEdgesInSamples[j] 
+					&& relativeSampleNum < binEdgesInSamples[j+1])
+				{
+					int lastCount = counts[j];
+					int newCount = lastCount + 1;
 
-		for (int j = 0; j < nBins; j++)
-        {
-            
-            if (relativeSampleNum > binEdgesInSamples[j] 
-				&& relativeSampleNum < binEdgesInSamples[j+1])
-            {
-                int lastCount = counts[j];
-                int newCount = lastCount + 1;
+					maxCount = jmax(newCount, maxCount);
+									
+					counts.set(j, newCount);
 
-				maxCount = jmax(newCount, maxCount);
-                                
-                counts.set(j, newCount);
-
-                break;
-            }
-                
-        }
+					break;
+				}
+					
+			}
+		}
     }
 
 	if(lastValidIndex > -1)
@@ -155,7 +156,7 @@ void RateViewerCanvas::updatePlotRange()
 	range.xmin = (float)-windowSize;
 	range.xmax = 0.0f;
 	range.ymin = 0.0f;
-	range.ymax = (float)maxCount;
+	range.ymax = (float)maxCount * 1000 / binSize;
 
 	plt.setRange(range);
 }
@@ -164,14 +165,6 @@ void RateViewerCanvas::updatePlotRange()
 void RateViewerCanvas::setWindowSizeMs(int windowSize_)
 {
 	windowSize = windowSize_;
-
-	if(CoreServices::getAcquisitionStatus())
-		stopCallbacks();
-
-	refreshRate = 1000/windowSize;
-
-	if(CoreServices::getAcquisitionStatus())
-		startCallbacks();
 
 	setBinSizeMs(processor->getBinSizeMs());
 
@@ -183,6 +176,16 @@ void RateViewerCanvas::setBinSizeMs(int binSize_)
 	binSize = binSize_;
 
 	recompute();
+
+	maxCount = 1;
+
+	if(CoreServices::getAcquisitionStatus())
+		stopCallbacks();
+
+	refreshRate = 1000/binSize;
+
+	if(CoreServices::getAcquisitionStatus())
+		startCallbacks();
 }
 
 void RateViewerCanvas::recompute()
@@ -221,4 +224,9 @@ void RateViewerCanvas::setSampleRate(float sampleRate_)
 void RateViewerCanvas::addSpike(int64 sample_num)
 {
 	incomingSpikeSampleNums.add(sample_num);
+}
+
+void RateViewerCanvas::setPlotTitle(const String& title)
+{
+	plt.title(title);
 }

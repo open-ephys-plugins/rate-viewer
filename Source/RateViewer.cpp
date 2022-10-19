@@ -184,7 +184,10 @@ void RateViewer::setActiveElectrode(String name)
             electrode->isActive = true;
 
             if(canvas != nullptr)
+            {
                 canvas->setSampleRate(electrode->sampleRate);
+                canvas->setPlotTitle(electrode->name);
+            }
 
         }
         else
