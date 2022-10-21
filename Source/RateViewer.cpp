@@ -138,7 +138,8 @@ void RateViewer::handleTTLEvent(TTLEventPtr event)
 void RateViewer::handleSpike(SpikePtr spike)
 {
     if(spike->getStreamId() == getEditor()->getCurrentStream()
-       && electrodeMap.at(spike->getChannelInfo())->isActive)
+       && electrodeMap.at(spike->getChannelInfo())->isActive
+       && canvas != nullptr)
     {
         canvas->addSpike(spike->getSampleNumber());
     } 

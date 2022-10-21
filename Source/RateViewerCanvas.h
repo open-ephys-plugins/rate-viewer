@@ -103,11 +103,7 @@ private:
 	Array<double> binEdges;
 	Array<int> binEdgesInSamples;
 
-	Array<double> relativeTimes;
-
 	Array<int64> incomingSpikeSampleNums;
-
-	int lastValidIndex;
 
 	Array<int> counts;
 	int maxCount;

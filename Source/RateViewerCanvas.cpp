@@ -32,7 +32,6 @@ RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
 	  binSize(0),
 	  windowSize(0),
 	  mostRecentSample(0),
-	  lastValidIndex(-1),
 	  maxCount(0)
 {
 	viewport = std::make_unique<Viewport>("Viewport");
@@ -110,6 +109,7 @@ void RateViewerCanvas::recount()
 	counts.insertMultiple(0, 0, nBins);
 
 	int windowSizeInSamples = windowSize * sampleRate / 1000;
+	int lastValidIndex = -1;
     
     for (int i = 0; i < incomingSpikeSampleNums.size(); i++)
     {
