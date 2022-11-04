@@ -30,7 +30,7 @@ class RateViewer;
 
 /**
 * 
-	Draws data in real time
+	Draws spike rate for one electrode
 
 */
 class RateViewerCanvas : public Visualizer
@@ -46,7 +46,7 @@ public:
 	/** Updates boundaries of sub-components whenever the canvas size changes */
 	void resized() override;
 
-	/** Called when the visualizer's tab becomes visible again */
+	/** Called when the visualizer's tab becomes visible again -- not actually used */
 	void refreshState() override;
 
 	/** Updates settings */
@@ -55,59 +55,57 @@ public:
 	/** Called instead of "repaint()" to avoid re-painting sub-components*/
 	void refresh() override;
 
-	// /** Called when data acquisition is active.*/
-    // void beginAnimation() override;
-
-    // /** Called when data acquisition ends.*/
-    // void endAnimation() override;
-
 	/** Draws the canvas background */
 	void paint(Graphics& g) override;
 
+	/** Sets the window size for the plot*/
 	void setWindowSizeMs(int windowSize_);
 
+	/** Sets the bin size for the plot*/
 	void setBinSizeMs(int binSize_);
 
+	/** Sets the sample index for the latest buffer*/
 	void setMostRecentSample(int64 sampleNum);
 
+	/** Adds a spike sample number */
+	void addSpike(int64 sample_number);
+
+	/** Sets the sample rate for the selected electrode*/
 	void setSampleRate(float sampleRate);
 
-	/** Adds a spike time */
-    void addSpike(int64 sample_number);
-
+	/** Sets the title as the name of the selected electrode */
 	void setPlotTitle(const String& title);
 
 private:
 
-	/** Recounts spikes/bin */
-    void recount();
+	/** Recounts spikes/bin; returns true if a new bin is available */
+    bool countSpikes();
 
 	/** Recomputes bin edges */
-    void recompute();
+    void recomputeBinEdges();
 
+	/** Adjusts plot range so all points are visible*/
 	void updatePlotRange();
 
 	/** Pointer to the processor class */
 	RateViewer* processor;
 
-	std::unique_ptr<Viewport> viewport;
-
 	/** Class for plotting data */
 	InteractivePlot plt;
 
-	float sampleRate;
+	float sampleRate = 0.0f;
 
-	int windowSize, binSize;
-	int64 mostRecentSample;
+	int windowSize = 1000;
+	int binSize = 50;
+
+	int64 mostRecentSample = 0;
+	int64 sampleOnLastRedraw = 0;
+	int maxCount = 1;
 
 	Array<double> binEdges;
-	Array<int> binEdgesInSamples;
-
 	Array<int64> incomingSpikeSampleNums;
 
 	Array<int> counts;
-	int maxCount;
-	
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);

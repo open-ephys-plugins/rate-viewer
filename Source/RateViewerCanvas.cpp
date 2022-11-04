@@ -27,27 +27,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
-	: processor(processor_),
-	  sampleRate(0.0f),
-	  binSize(0),
-	  windowSize(0),
-	  mostRecentSample(0),
-	  maxCount(0)
+	: processor(processor_)
 {
-	viewport = std::make_unique<Viewport>("Viewport");
-	viewport->setScrollBarsShown(true, true);
 
-	plt.clear();
 	plt.xlabel("Offset(ms)");
 	plt.ylabel("Rate (Hz)");
 	plt.setInteractive(InteractivePlotMode::OFF);
 	plt.setBackgroundColour(Colours::darkslategrey);
-	plt.show();
+	addAndMakeVisible(&plt);
 
-	viewport->setViewedComponent(&plt, false);
-	addAndMakeVisible(viewport.get());
-
-	setWindowSizeMs(processor->getWindowSizeMs());
+	plt.setBounds(50, 50, 800, 500);
 
 }
 
@@ -60,8 +49,7 @@ RateViewerCanvas::~RateViewerCanvas()
 
 void RateViewerCanvas::resized()
 {
-	viewport->setBounds(0, 50, getWidth(), getHeight()-50);
-	plt.setBounds(0, 0, getWidth() - viewport->getScrollBarThickness(), getHeight() - 100);
+
 }
 
 void RateViewerCanvas::refreshState()
@@ -72,81 +60,63 @@ void RateViewerCanvas::refreshState()
 
 void RateViewerCanvas::update()
 {        
-	
+	updatePlotRange();
 }
 
 
 void RateViewerCanvas::refresh()
 {
-	recount();
-	
-	std::vector<float> x, y;
-
-	for(int i = 0; i < binEdges.size() - 1; i++)
+	if (countSpikes())
 	{
-		float bin = (binEdges[i] + binEdges[i + 1]) / 2;
-		x.push_back(bin);
-		y.push_back(counts[i] * 1000 / binSize);
+		std::vector<float> x, y;
+
+		for (int i = 0; i < binEdges.size() - 1; i++)
+		{
+			x.push_back(binEdges[i]);
+			y.push_back(counts[i] * 1000 / binSize);
+		}
+
+		plt.clear();
+		plt.plot(x, y, Colours::lightyellow, 1.0, 1.0f, PlotType::FILLED);
 	}
 
-	plt.clear();
-	plt.plot(x, y, Colours::lightyellow, 1.0, 1.0f, PlotType::FILLED);
 }
 
 
 void RateViewerCanvas::paint(Graphics& g)
 {
+	
 	g.fillAll(Colours::darkgrey);
 
 }
 
 
-void RateViewerCanvas::recount()
+bool RateViewerCanvas::countSpikes()
 {
     
-    const int nBins = binEdgesInSamples.size() - 1;
-    counts.clear();
-	counts.insertMultiple(0, 0, nBins);
+	int elapsedSamples = mostRecentSample - sampleOnLastRedraw;
+	float elapsedTimeMs = float(elapsedSamples) / sampleRate * 1000.0f;
 
-	int windowSizeInSamples = windowSize * sampleRate / 1000;
-	int lastValidIndex = -1;
-    
-    for (int i = 0; i < incomingSpikeSampleNums.size(); i++)
-    {
-        int relativeSampleNum = incomingSpikeSampleNums[i] - mostRecentSample;
-		
-		if(relativeSampleNum > windowSizeInSamples)
-		{
-			lastValidIndex = i + 1;
-		}
-		else
-		{
-			for (int j = 0; j < nBins; j++)
-			{
-				
-				if (relativeSampleNum > binEdgesInSamples[j] 
-					&& relativeSampleNum < binEdgesInSamples[j+1])
-				{
-					int lastCount = counts[j];
-					int newCount = lastCount + 1;
+	if (elapsedTimeMs < binSize)
+		return false;
 
-					maxCount = jmax(newCount, maxCount);
-									
-					counts.set(j, newCount);
+	counts.remove(0); // remove oldest count
 
-					break;
-				}
-					
-			}
-		}
-    }
+	int newSpikeCount = incomingSpikeSampleNums.size();
 
-	if(lastValidIndex > -1)
-	{
-		incomingSpikeSampleNums.removeRange(0, lastValidIndex);
-	}
+	if (newSpikeCount > maxCount)
+		maxCount = newSpikeCount;
+
+	counts.add(newSpikeCount); // add most recent count
+
+	incomingSpikeSampleNums.clear();
 
 	updatePlotRange();
+
+	sampleOnLastRedraw = mostRecentSample;
+
+	return true;
+	
 }
 
 
@@ -154,7 +124,7 @@ void RateViewerCanvas::updatePlotRange()
 {
 	XYRange range;
 	range.xmin = (float)-windowSize;
-	range.xmax = 0.0f;
+	range.xmax = (float) -binSize;
 	range.ymin = 0.0f;
 	range.ymax = (float)maxCount * 1000 / binSize;
 
@@ -166,7 +136,7 @@ void RateViewerCanvas::setWindowSizeMs(int windowSize_)
 {
 	windowSize = windowSize_;
 
-	setBinSizeMs(processor->getBinSizeMs());
+	recomputeBinEdges();
 
 	updatePlotRange();
 }
@@ -175,38 +145,37 @@ void RateViewerCanvas::setBinSizeMs(int binSize_)
 {
 	binSize = binSize_;
 
-	recompute();
+	recomputeBinEdges();
 
 	maxCount = 1;
-
-	if(CoreServices::getAcquisitionStatus())
-		stopCallbacks();
-
-	refreshRate = 1000/binSize;
-
-	if(CoreServices::getAcquisitionStatus())
-		startCallbacks();
 }
 
-void RateViewerCanvas::recompute()
+void RateViewerCanvas::recomputeBinEdges()
 {
+	
 	binEdges.clear();
-	binEdgesInSamples.clear();
+	counts.clear();
 
-	if(binSize == 0 || windowSize == 0)
+	if (binSize == 0 || windowSize == 0)
 		return;
 
 	double binEdge = (double) -windowSize;
 
-	while(binEdge < 0)
+	while (binEdge < 0)
 	{
 		binEdges.add(binEdge);
-		binEdgesInSamples.add(binEdge * sampleRate / 1000);
 		binEdge += (double)binSize;
 	}
 
 	binEdges.add(0.0);
-	binEdgesInSamples.add(0);
+
+	counts.insertMultiple(0, 0, binEdges.size());
+}
+
+
+void RateViewerCanvas::addSpike(int64 sample_num)
+{
+	incomingSpikeSampleNums.add(sample_num);
 }
 
 void RateViewerCanvas::setMostRecentSample(int64 sampleNum)
@@ -214,16 +183,12 @@ void RateViewerCanvas::setMostRecentSample(int64 sampleNum)
 	mostRecentSample = sampleNum;
 }
 
+
 void RateViewerCanvas::setSampleRate(float sampleRate_)
 {
 	sampleRate = sampleRate_;
 
-	recompute();
-}
-
-void RateViewerCanvas::addSpike(int64 sample_num)
-{
-	incomingSpikeSampleNums.add(sample_num);
+	recomputeBinEdges();
 }
 
 void RateViewerCanvas::setPlotTitle(const String& title)

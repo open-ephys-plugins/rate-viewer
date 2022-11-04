@@ -28,19 +28,19 @@
 
 RateViewer::RateViewer() 
     : GenericProcessor("Rate Viewer"),
-      windowSize(500),
-      binSize(25),
+      windowSize(1000),
+      binSize(50),
       canvas(nullptr)
 {
     addIntParameter(Parameter::GLOBAL_SCOPE,
                     "window_size",
                     "Size of the window in ms",
-                    500, 10, 1000);
+                    windowSize, 100, 5000);
     
     addIntParameter(Parameter::GLOBAL_SCOPE,
                     "bin_size",
                     "Size of the bins in ms",
-                    25, 1, 100);
+                    binSize, 25, 500);
 }
 
 
@@ -77,6 +77,7 @@ void RateViewer::updateSettings()
     }
 
     parameterValueChanged(getParameter("window_size"));
+    parameterValueChanged(getParameter("bin_size"));
 }
 
 bool RateViewer::startAcquisition()
@@ -112,6 +113,9 @@ void RateViewer::process(AudioBuffer<float>& buffer)
 
 void RateViewer::parameterValueChanged(Parameter* param)
 {
+
+    LOGD("Parameter: ", param->getName(), ", value: ", (int)param->getValue());
+
    if (param->getName().equalsIgnoreCase("window_size"))
     {
         windowSize = (int)param->getValue();
@@ -189,7 +193,6 @@ void RateViewer::setActiveElectrode(String name)
                 canvas->setSampleRate(electrode->sampleRate);
                 canvas->setPlotTitle(electrode->name);
             }
-
         }
         else
         {
