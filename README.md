@@ -4,7 +4,7 @@
 
 This repository contains the final code for the [Making Your Own Visualizer Plugin Tutorial](https://open-ephys.github.io/gui-docs/Tutorials/Making-Your-Own-Visualizer-Plugin.html) on the Open Ephys GUI documentation site.
 
-If you get stuck following this tutorial, please send a message to `support@open-ephys.org`
+If you get stuck following this tutorial, please [open an Issue](https://github.com/open-ephys-plugins/rate-viewer/issues) in this repository.
 
 
 ## Building from source
