@@ -103,9 +103,9 @@ private:
 	int maxCount = 1;
 
 	Array<double> binEdges;
-	Array<int64> incomingSpikeSampleNums;
+	Array<int> spikeCounts;
 
-	Array<int> counts;
+	Array<int64> incomingSpikeSampleNums;
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerCanvas);

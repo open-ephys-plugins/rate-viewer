@@ -1,4 +1,4 @@
-# Visualizer Plugin Template
+# Rate Viewer
 
 This repository contains a template for building **Visualizer** plugins for the [Open Ephys GUI](https://github.com/open-ephys/plugin-GUI). Visualizer plugins are similar to Processor Plugins, but they also include a separate "Canvas" that can be used to display data or an extended configuration interface.
 

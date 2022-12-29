@@ -91,7 +91,7 @@ public:
 	/** Returns an array of available electrodes*/
     Array<String> getElectrodesForStream(uint16 streamId);
 
-	void setActiveElectrode(String name);
+	void setActiveElectrode(uint16 streamId, String name);
 
 	int getWindowSizeMs();
 

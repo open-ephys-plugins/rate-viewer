@@ -27,10 +27,7 @@
 #include "RateViewerCanvas.h"
 
 RateViewer::RateViewer() 
-    : GenericProcessor("Rate Viewer"),
-      windowSize(1000),
-      binSize(50),
-      canvas(nullptr)
+    : GenericProcessor("Rate Viewer")
 {
     addIntParameter(Parameter::GLOBAL_SCOPE,
                     "window_size",
@@ -97,9 +94,9 @@ void RateViewer::process(AudioBuffer<float>& buffer)
 {	
     checkForEvents(true);
 
-    for(auto stream : getDataStreams())
+    for (auto stream : getDataStreams())
     {
-        if(stream->getStreamId() == getEditor()->getCurrentStream())
+        if (stream->getStreamId() == getEditor()->getCurrentStream())
         {
             int64 mostRecentSample = getFirstSampleNumberForBlock(stream->getStreamId()) + getNumSamplesInBlock(stream->getStreamId());
 
@@ -114,18 +111,16 @@ void RateViewer::process(AudioBuffer<float>& buffer)
 void RateViewer::parameterValueChanged(Parameter* param)
 {
 
-    LOGD("Parameter: ", param->getName(), ", value: ", (int)param->getValue());
-
    if (param->getName().equalsIgnoreCase("window_size"))
     {
-        windowSize = (int)param->getValue();
+        int windowSize = (int)param->getValue();
 
         if(canvas != nullptr)
             canvas->setWindowSizeMs(windowSize);
     }
     else if (param->getName().equalsIgnoreCase("bin_size"))
     {
-        binSize = (int)param->getValue();
+        int binSize = (int)param->getValue();
 
         if(canvas != nullptr)
             canvas->setBinSizeMs(binSize);
@@ -180,11 +175,11 @@ Array<String> RateViewer::getElectrodesForStream(uint16 streamId)
     return electrodesForStream;
 }
 
-void RateViewer::setActiveElectrode(String name)
+void RateViewer::setActiveElectrode(uint16 streamId, String name)
 {
     for (auto electrode : electrodes)
     {
-        if (electrode->name.equalsIgnoreCase(name))
+        if (electrode->name.equalsIgnoreCase(name) && electrode->streamId == streamId)
         {
             electrode->isActive = true;
 

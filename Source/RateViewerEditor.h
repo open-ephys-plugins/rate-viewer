@@ -27,9 +27,6 @@
 
 #include <VisualizerEditorHeaders.h>
 
-class RateViewer;
-class RateViewerCanvas;
-
 /** 
 	The editor for the RateViewer
 
@@ -48,7 +45,7 @@ public:
 	~RateViewerEditor() { }
 
 	/** Creates the canvas */
-	Visualizer* createNewCanvas();
+	Visualizer* createNewCanvas() override;
 
 	/** ComboBox::Listener callback*/
     void comboBoxChanged(ComboBox* comboBox) override;
@@ -58,13 +55,7 @@ public:
 
 private:
 
-	std::unique_ptr<Label> electrodeSelectionLabel;
 	std::unique_ptr<ComboBox> electrodeList;
-
-	Array<String> currentElectrodes;
-
-	RateViewerCanvas* rateViewerCanvas;
-	RateViewer* rateViewerNode;
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewerEditor);

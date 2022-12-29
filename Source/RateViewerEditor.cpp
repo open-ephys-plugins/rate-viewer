@@ -29,8 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 RateViewerEditor::RateViewerEditor(GenericProcessor* p)
-    : VisualizerEditor(p, "Spike Rate", 210),
-      rateViewerCanvas(nullptr)
+    : VisualizerEditor(p, "Spike Rate", 210)
 {
 
     electrodeList = std::make_unique<ComboBox>("Electrode List");
@@ -42,13 +41,14 @@ RateViewerEditor::RateViewerEditor(GenericProcessor* p)
 
     addTextBoxParameterEditor("bin_size", 120, 75);
 
-    rateViewerNode = (RateViewer*)p;
-
 }
 
 Visualizer* RateViewerEditor::createNewCanvas()
 {
-    rateViewerCanvas = new RateViewerCanvas(rateViewerNode);
+
+    RateViewer* rateViewerNode = (RateViewer*) getProcessor();
+
+    RateViewerCanvas* rateViewerCanvas = new RateViewerCanvas(rateViewerNode);
 
     rateViewerNode->canvas = rateViewerCanvas;
 
@@ -59,22 +59,20 @@ Visualizer* RateViewerEditor::createNewCanvas()
 
 void RateViewerEditor::comboBoxChanged(ComboBox* comboBox)
 {
-    if (comboBox == electrodeList.get())
+    if (comboBox == electrodeList.get() && comboBox->getNumItems() > 0)
     {
-        if(currentElectrodes.size() == 0)
-        {
-            rateViewerNode->setActiveElectrode("None");
-        }
-        else
-        {
-            rateViewerNode->setActiveElectrode(
-                currentElectrodes[electrodeList->getSelectedId() - 1]);
-        }
+       
+        RateViewer* rateViewerNode = (RateViewer*) getProcessor();
+    
+        rateViewerNode->setActiveElectrode(selectedStream, comboBox->getText());
     }
 }
 
 void RateViewerEditor::selectedStreamHasChanged()
 {
+
+    RateViewer* rateViewerNode = (RateViewer*) getProcessor();
+
     electrodeList->clear();
 
     if (selectedStream == 0)
@@ -82,8 +80,7 @@ void RateViewerEditor::selectedStreamHasChanged()
         return;
     }
 
-
-    currentElectrodes = rateViewerNode->getElectrodesForStream(selectedStream);
+    Array<String> currentElectrodes = rateViewerNode->getElectrodesForStream(selectedStream);
 
     int id = 0;
 

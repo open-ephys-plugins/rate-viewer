@@ -60,7 +60,7 @@ void RateViewerCanvas::refreshState()
 
 void RateViewerCanvas::update()
 {        
-	updatePlotRange();
+
 }
 
 
@@ -73,7 +73,7 @@ void RateViewerCanvas::refresh()
 		for (int i = 0; i < binEdges.size() - 1; i++)
 		{
 			x.push_back(binEdges[i]);
-			y.push_back(counts[i] * 1000 / binSize);
+			y.push_back(spikeCounts[i] * 1000 / binSize);
 		}
 
 		plt.clear();
@@ -86,7 +86,7 @@ void RateViewerCanvas::refresh()
 void RateViewerCanvas::paint(Graphics& g)
 {
 	
-	g.fillAll(Colours::darkgrey);
+	g.fillAll(Colours::black);
 
 }
 
@@ -100,14 +100,14 @@ bool RateViewerCanvas::countSpikes()
 	if (elapsedTimeMs < binSize)
 		return false;
 
-	counts.remove(0); // remove oldest count
+	spikeCounts.remove(0); // remove oldest count
 
 	int newSpikeCount = incomingSpikeSampleNums.size();
 
 	if (newSpikeCount > maxCount)
 		maxCount = newSpikeCount;
 
-	counts.add(newSpikeCount); // add most recent count
+	spikeCounts.add(newSpikeCount); // add most recent count
 
 	incomingSpikeSampleNums.clear();
 
@@ -123,10 +123,10 @@ bool RateViewerCanvas::countSpikes()
 void RateViewerCanvas::updatePlotRange()
 {
 	XYRange range;
-	range.xmin = (float)-windowSize;
+	range.xmin = (float) -windowSize;
 	range.xmax = (float) -binSize;
 	range.ymin = 0.0f;
-	range.ymax = (float)maxCount * 1000 / binSize;
+	range.ymax = (float) maxCount * 1000 / binSize;
 
 	plt.setRange(range);
 }
@@ -154,7 +154,7 @@ void RateViewerCanvas::recomputeBinEdges()
 {
 	
 	binEdges.clear();
-	counts.clear();
+	spikeCounts.clear();
 
 	if (binSize == 0 || windowSize == 0)
 		return;
@@ -169,7 +169,7 @@ void RateViewerCanvas::recomputeBinEdges()
 
 	binEdges.add(0.0);
 
-	counts.insertMultiple(0, 0, binEdges.size());
+	spikeCounts.insertMultiple(0, 0, binEdges.size());
 }
 
 
