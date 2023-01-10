@@ -97,6 +97,7 @@ public:
 
 	int getBinSizeMs();
 
+	/** Pointer to the Visualizer -- initialize to nullptr*/
 	RateViewerCanvas* canvas = nullptr;
 
 private:
