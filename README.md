@@ -69,7 +69,7 @@ cmake -G "Xcode" ..
 
 Next, launch Xcode and open the `rate-viewer.xcodeproj` file that now lives in the “Build” directory.
 
-Running the `ALL_BUILD` scheme will compile the plugin; running the `INSTALL` scheme will install the `.bundle` file to `/Users/<username>/Library/Application Support/open-ephys/plugins-api`. The Rate Viewer plugin should be available the next time you launch the GUI from Xcode.
+Running the `ALL_BUILD` scheme will compile the plugin; running the `INSTALL` scheme will install the `.bundle` file to `/Users/<username>/Library/Application Support/open-ephys/plugins-api8`. The Rate Viewer plugin should be available the next time you launch the GUI from Xcode.
 
 **Note:** If you’re building the plugin on a Mac with Apple Silicon, you’ll need to make sure the `ALL_BUILD` scheme is set use “Rosetta”. You will likely need to first set the build target to “Any Mac,” and then select the “My Mac (Rosetta)” option that appears. It is possible to build a version of the GUI that runs natively on Apple Silicon, but there are a few extra steps involved, and it won’t work with plugins downloaded via the Plugin Installer. If you’re interested in this, please reach out to `support@open-ephys.org` for more info.
 

@@ -73,8 +73,12 @@ void RateViewer::updateSettings()
         }
     }
 
-    parameterValueChanged(getParameter("window_size"));
-    parameterValueChanged(getParameter("bin_size"));
+    if (canvas != nullptr)
+    {
+        parameterValueChanged(getParameter("window_size"));
+        parameterValueChanged(getParameter("bin_size"));
+    }
+    
 }
 
 bool RateViewer::startAcquisition()

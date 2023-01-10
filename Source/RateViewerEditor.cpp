@@ -52,6 +52,11 @@ Visualizer* RateViewerEditor::createNewCanvas()
 
     rateViewerNode->canvas = rateViewerCanvas;
 
+    // make sure the parameters get updated
+    rateViewerCanvas->setWindowSizeMs(rateViewerNode->getParameter("window_size")->getValue());
+    rateViewerCanvas->setBinSizeMs(rateViewerNode->getParameter("bin_size")->getValue());
+
+    // update list of available electrodes
     selectedStreamHasChanged();
 
     return rateViewerCanvas;
