@@ -93,10 +93,6 @@ public:
 
 	void setActiveElectrode(uint16 streamId, String name);
 
-	int getWindowSizeMs();
-
-	int getBinSizeMs();
-
 	/** Pointer to the Visualizer -- initialize to nullptr*/
 	RateViewerCanvas* canvas = nullptr;
 
@@ -118,9 +114,6 @@ private:
 
 	OwnedArray<Electrode> electrodes;
 	std::map<const SpikeChannel*, Electrode*> electrodeMap;
-
-	int windowSize = 2000;
-	int binSize = 100;
 
 	/** Generates an assertion if this class leaks */
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewer);

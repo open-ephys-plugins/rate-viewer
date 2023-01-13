@@ -32,12 +32,12 @@ RateViewer::RateViewer()
     addIntParameter(Parameter::GLOBAL_SCOPE,
                     "window_size",
                     "Size of the window in ms",
-                    windowSize, 100, 5000);
+                    1000, 100, 5000);
     
     addIntParameter(Parameter::GLOBAL_SCOPE,
                     "bin_size",
                     "Size of the bins in ms",
-                    binSize, 25, 500);
+                    50, 25, 500);
 }
 
 
@@ -198,14 +198,4 @@ void RateViewer::setActiveElectrode(uint16 streamId, String name)
             electrode->isActive = false;
         }
     }
-}
-
-int RateViewer::getWindowSizeMs()
-{
-    return windowSize;
-}
-
-int RateViewer::getBinSizeMs()
-{
-    return binSize;
 }
