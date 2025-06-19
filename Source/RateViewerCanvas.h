@@ -50,7 +50,7 @@ public:
 	void refreshState() override;
 
 	/** Updates settings */
-	void update() override;
+	void updateSettings() override;
 
 	/** Called instead of "repaint()" to avoid re-painting sub-components*/
 	void refresh() override;
@@ -64,8 +64,8 @@ public:
 	/** Sets the bin size for the plot*/
 	void setBinSizeMs(int binSize_);
 
-	/** Sets the sample index for the latest buffer*/
-	void setMostRecentSample(int64 sampleNum);
+	/** Counts the total number of samples received */
+	void incrementSampleCount(int64 sampleCount);
 
 	/** Adds a spike sample number */
 	void addSpike(int64 sample_number);
@@ -91,7 +91,7 @@ private:
 	RateViewer* processor;
 
 	/** Class for plotting data */
-	InteractivePlot plt;
+	std::unique_ptr<InteractivePlot> plt;
 
 	float sampleRate = 0.0f;
 

@@ -30,13 +30,15 @@ RateViewerCanvas::RateViewerCanvas(RateViewer* processor_)
 	: processor(processor_)
 {
 
-	plt.xlabel("Offset(ms)");
-	plt.ylabel("Rate (Hz)");
-	plt.setInteractive(InteractivePlotMode::OFF);
-	plt.setBackgroundColour(Colours::darkslategrey);
-	addAndMakeVisible(&plt);
+    plt = std::make_unique<InteractivePlot>();
+    
+	plt->xlabel("Offset(ms)");
+	plt->ylabel("Rate (Hz)");
+	plt->setInteractive(InteractivePlotMode::OFF);
+	plt->setBackgroundColour(Colours::darkslategrey);
+	addAndMakeVisible(plt.get());
 
-	plt.setBounds(50, 50, 800, 500);
+	plt->setBounds(50, 50, 800, 500);
 
 }
 
@@ -58,8 +60,8 @@ void RateViewerCanvas::refreshState()
 }
 
 
-void RateViewerCanvas::update()
-{        
+void RateViewerCanvas::updateSettings()
+{
 
 }
 
@@ -76,8 +78,8 @@ void RateViewerCanvas::refresh()
 			y.push_back(spikeCounts[i] * 1000 / binSize);
 		}
 
-		plt.clear();
-		plt.plot(x, y, Colours::lightyellow, 1.0, 1.0f, PlotType::FILLED);
+		plt->clear();
+		plt->plot(x, y, Colours::lightyellow, 1.0, 1.0f, PlotType::FILLED);
 	}
 
 }
@@ -94,9 +96,9 @@ void RateViewerCanvas::paint(Graphics& g)
 bool RateViewerCanvas::countSpikes()
 {
     
-	int elapsedSamples = mostRecentSample - sampleOnLastRedraw;
+	int64 elapsedSamples = mostRecentSample - sampleOnLastRedraw;
 	float elapsedTimeMs = float(elapsedSamples) / sampleRate * 1000.0f;
-
+    
 	if (elapsedTimeMs < binSize)
 		return false;
 
@@ -114,7 +116,7 @@ bool RateViewerCanvas::countSpikes()
 	updatePlotRange();
 
 	sampleOnLastRedraw = mostRecentSample;
-
+    
 	return true;
 	
 }
@@ -128,7 +130,7 @@ void RateViewerCanvas::updatePlotRange()
 	range.ymin = 0.0f;
 	range.ymax = (float) maxCount * 1000 / binSize;
 
-	plt.setRange(range);
+	plt->setRange(range);
 }
 
 
@@ -178,9 +180,9 @@ void RateViewerCanvas::addSpike(int64 sample_num)
 	incomingSpikeSampleNums.add(sample_num);
 }
 
-void RateViewerCanvas::setMostRecentSample(int64 sampleNum)
+void RateViewerCanvas::incrementSampleCount(int64 sampleCount)
 {
-	mostRecentSample = sampleNum;
+    mostRecentSample += sampleCount;
 }
 
 
@@ -193,5 +195,5 @@ void RateViewerCanvas::setSampleRate(float sampleRate_)
 
 void RateViewerCanvas::setPlotTitle(const String& title)
 {
-	plt.title(title);
+	plt->title(title);
 }

@@ -34,12 +34,12 @@ RateViewerEditor::RateViewerEditor(GenericProcessor* p)
 
     electrodeList = std::make_unique<ComboBox>("Electrode List");
     electrodeList->addListener(this);
-    electrodeList->setBounds(50,40,120,20);
+    electrodeList->setBounds(15,40,120,20);
     addAndMakeVisible(electrodeList.get());
 
-    addTextBoxParameterEditor("window_size", 15, 75);
+    addTextBoxParameterEditor(Parameter::PROCESSOR_SCOPE, "window_size", 15, 75);
 
-    addTextBoxParameterEditor("bin_size", 120, 75);
+    addTextBoxParameterEditor(Parameter::PROCESSOR_SCOPE, "bin_size", 15, 100);
 
 }
 

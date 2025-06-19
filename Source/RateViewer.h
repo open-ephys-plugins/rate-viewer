@@ -45,6 +45,9 @@ public:
 
 	/** If the processor has a custom editor, this method must be defined to instantiate it. */
 	AudioProcessorEditor* createEditor() override;
+    
+    /** All processor parameters must be created here */
+    void registerParameters() override;
 
 	/** Called every time the settings of an upstream plugin are changed.
 		Allows the processor to handle variations in the channel configuration or any other parameter
@@ -72,7 +75,7 @@ public:
 
 	/** Handles broadcast messages sent during acquisition
 		Called automatically whenever a broadcast message is sent through the signal chain */
-	void handleBroadcastMessage(String message) override;
+	void handleBroadcastMessage(const String& message, const int64 systemTimeMillis) override;
 
 	/** Saving custom settings to XML. This method is not needed to save the state of
 		Parameter objects */

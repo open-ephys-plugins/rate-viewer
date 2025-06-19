@@ -26,20 +26,11 @@
 #include "RateViewerEditor.h"
 #include "RateViewerCanvas.h"
 
-RateViewer::RateViewer() 
+RateViewer::RateViewer()
     : GenericProcessor("Rate Viewer")
 {
-    addIntParameter(Parameter::GLOBAL_SCOPE,
-                    "window_size",
-                    "Size of the window in ms",
-                    1000, 100, 5000);
-    
-    addIntParameter(Parameter::GLOBAL_SCOPE,
-                    "bin_size",
-                    "Size of the bins in ms",
-                    50, 25, 500);
-}
 
+}
 
 RateViewer::~RateViewer()
 {
@@ -53,6 +44,24 @@ AudioProcessorEditor* RateViewer::createEditor()
     return editor.get();
 }
 
+void RateViewer::registerParameters()
+{
+    addIntParameter(Parameter::PROCESSOR_SCOPE, // scope
+                    "window_size",              // parameter name
+                    "Window size",              // display name
+                    "Size of the window in ms", // description
+                    1000,                       // default value
+                    100,                        // minimum value
+                    5000);                      // maximum value
+    
+    addIntParameter(Parameter::PROCESSOR_SCOPE, // scope
+                    "bin_size",                 // parameter name
+                    "Bin size",                 // display name
+                    "Size of the bins in ms",   // description
+                    50,                         // default value
+                    25,                         // minimum value
+                    500);                       // maximum value
+}
 
 void RateViewer::updateSettings()
 {
@@ -83,7 +92,7 @@ void RateViewer::updateSettings()
 
 bool RateViewer::startAcquisition()
 {
-	((RateViewerEditor*)getEditor())->enable();
+    ((RateViewerEditor*)getEditor())->enable();
     return true;
 }
 
@@ -95,19 +104,11 @@ bool RateViewer::stopAcquisition()
 
 
 void RateViewer::process(AudioBuffer<float>& buffer)
-{	
+{
     checkForEvents(true);
-
-    for (auto stream : getDataStreams())
-    {
-        if (stream->getStreamId() == getEditor()->getCurrentStream())
-        {
-            int64 mostRecentSample = getFirstSampleNumberForBlock(stream->getStreamId()) + getNumSamplesInBlock(stream->getStreamId());
-
-            if(canvas != nullptr)
-                canvas->setMostRecentSample(mostRecentSample);
-        }
-    }
+    
+    if (canvas != nullptr)
+        canvas->incrementSampleCount(getNumSamplesInBlock(getEditor()->getCurrentStream()));
 
 }
 
@@ -117,17 +118,13 @@ void RateViewer::parameterValueChanged(Parameter* param)
 
    if (param->getName().equalsIgnoreCase("window_size"))
     {
-        int windowSize = (int)param->getValue();
-
-        if(canvas != nullptr)
-            canvas->setWindowSizeMs(windowSize);
+        if (canvas != nullptr)
+            canvas->setWindowSizeMs((int)param->getValue());
     }
     else if (param->getName().equalsIgnoreCase("bin_size"))
     {
-        int binSize = (int)param->getValue();
-
-        if(canvas != nullptr)
-            canvas->setBinSizeMs(binSize);
+        if (canvas != nullptr)
+            canvas->setBinSizeMs((int)param->getValue());
     }
 }
 
@@ -140,16 +137,16 @@ void RateViewer::handleTTLEvent(TTLEventPtr event)
 
 void RateViewer::handleSpike(SpikePtr spike)
 {
-    if(spike->getStreamId() == getEditor()->getCurrentStream()
+    if (spike->getStreamId() == getEditor()->getCurrentStream()
        && electrodeMap.at(spike->getChannelInfo())->isActive
        && canvas != nullptr)
     {
         canvas->addSpike(spike->getSampleNumber());
-    } 
+    }
 }
 
 
-void RateViewer::handleBroadcastMessage(String message)
+void RateViewer::handleBroadcastMessage(const String& message, const int64 systemTimeMillis)
 {
 
 }
