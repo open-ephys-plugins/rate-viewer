@@ -2,7 +2,7 @@
 	------------------------------------------------------------------
 
 	This file is part of the Open Ephys GUI
-	Copyright (C) 2022 Open Ephys
+	Copyright (C) 2025 Open Ephys
 
 	------------------------------------------------------------------
 
@@ -37,90 +37,87 @@ class RateViewerCanvas;
 class RateViewer : public GenericProcessor
 {
 public:
-	/** The class constructor, used to initialize any members.*/
-	RateViewer();
+    /** The class constructor, used to initialize any members.*/
+    RateViewer();
 
-	/** The class destructor, used to deallocate memory*/
-	~RateViewer();
+    /** The class destructor, used to deallocate memory*/
+    ~RateViewer();
 
-	/** If the processor has a custom editor, this method must be defined to instantiate it. */
-	AudioProcessorEditor* createEditor() override;
-    
+    /** If the processor has a custom editor, this method must be defined to instantiate it. */
+    AudioProcessorEditor* createEditor() override;
+
     /** All processor parameters must be created here */
     void registerParameters() override;
 
-	/** Called every time the settings of an upstream plugin are changed.
+    /** Called every time the settings of an upstream plugin are changed.
 		Allows the processor to handle variations in the channel configuration or any other parameter
 		passed through signal chain. The processor can use this function to modify channel objects that
 		will be passed to downstream plugins. */
-	void updateSettings() override;
+    void updateSettings() override;
 
-	/** Defines the functionality of the processor.
+    /** Defines the functionality of the processor.
 		The process method is called every time a new data buffer is available.
 		Visualizer plugins typically use this method to send data to the canvas for display purposes */
-	void process(AudioBuffer<float>& buffer) override;
+    void process (AudioBuffer<float>& buffer) override;
 
-	/** Used to alter parameters of data acquisition. */
-    void parameterValueChanged(Parameter* param) override;
+    /** Used to alter parameters of data acquisition. */
+    void parameterValueChanged (Parameter* param) override;
 
-	/** Handles events received by the processor
+    /** Handles events received by the processor
 		Called automatically for each received event whenever checkForEvents() is called from
 		the plugin's process() method */
-	void handleTTLEvent(TTLEventPtr event) override;
+    void handleTTLEvent (TTLEventPtr event) override;
 
-	/** Handles spikes received by the processor
+    /** Handles spikes received by the processor
 		Called automatically for each received spike whenever checkForEvents(true) is called from 
 		the plugin's process() method */
-	void handleSpike(SpikePtr spike) override;
+    void handleSpike (SpikePtr spike) override;
 
-	/** Handles broadcast messages sent during acquisition
+    /** Handles broadcast messages sent during acquisition
 		Called automatically whenever a broadcast message is sent through the signal chain */
-	void handleBroadcastMessage(const String& message, const int64 systemTimeMillis) override;
+    void handleBroadcastMessage (const String& message, const int64 systemTimeMillis) override;
 
-	/** Saving custom settings to XML. This method is not needed to save the state of
+    /** Saving custom settings to XML. This method is not needed to save the state of
 		Parameter objects */
-	void saveCustomParametersToXml(XmlElement* parentElement) override;
+    void saveCustomParametersToXml (XmlElement* parentElement) override;
 
-	/** Load custom settings from XML. This method is not needed to load the state of
+    /** Load custom settings from XML. This method is not needed to load the state of
 		Parameter objects*/
-	void loadCustomParametersFromXml(XmlElement* parentElement) override;
+    void loadCustomParametersFromXml (XmlElement* parentElement) override;
 
-	/** Enables the editor */
+    /** Enables the editor */
     bool startAcquisition() override;
 
     /** Disables the editor*/
     bool stopAcquisition() override;
 
-	/** Returns an array of available electrodes*/
-    Array<String> getElectrodesForStream(uint16 streamId);
+    /** Returns an array of available electrodes*/
+    Array<String> getElectrodesForStream (uint16 streamId);
 
-	void setActiveElectrode(uint16 streamId, String name);
+    void setActiveElectrode (uint16 streamId, String name);
 
-	/** Pointer to the Visualizer -- initialize to nullptr*/
-	RateViewerCanvas* canvas = nullptr;
+    /** Pointer to the Visualizer -- initialize to nullptr*/
+    RateViewerCanvas* canvas = nullptr;
 
 private:
-
-	struct Electrode
+    struct Electrode
     {
         String name;
 
         int numChannels;
 
-		uint16 streamId;
+        uint16 streamId;
 
-		float sampleRate;
+        float sampleRate;
 
-		bool isActive = false;
+        bool isActive = false;
     };
 
+    OwnedArray<Electrode> electrodes;
+    std::map<const SpikeChannel*, Electrode*> electrodeMap;
 
-	OwnedArray<Electrode> electrodes;
-	std::map<const SpikeChannel*, Electrode*> electrodeMap;
-
-	/** Generates an assertion if this class leaks */
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RateViewer);
-
+    /** Generates an assertion if this class leaks */
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RateViewer);
 };
 
 #endif // RATEVIEWER_H_DEFINED
